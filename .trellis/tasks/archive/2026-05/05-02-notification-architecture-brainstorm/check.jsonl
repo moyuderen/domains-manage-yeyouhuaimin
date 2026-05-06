@@ -1,0 +1,4 @@
+{"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
+{"file": ".claude/commands/trellis/check.md", "reason": "Code quality check spec"}
+{"file": ".trellis/spec/backend/database.md", "reason": "质量检查需要覆盖通知数据层边界"}
+{"file": ".trellis/spec/shared/code-quality.md", "reason": "质量检查需要覆盖共享代码规范"}

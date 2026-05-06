@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/domain-expiry-check-daily",
+      "schedule": "5 1 * * *"
+    }
+  ]
+}

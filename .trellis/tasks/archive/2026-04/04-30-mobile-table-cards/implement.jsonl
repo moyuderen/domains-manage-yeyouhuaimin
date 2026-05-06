@@ -1,0 +1,4 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/frontend/components.md", "reason": "卡片组件和表格组件规范"}
+{"file": ".trellis/spec/frontend/css-layout.md", "reason": "响应式断点和布局策略"}

@@ -1,0 +1,6 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/backend/database.md", "reason": "通知数据层和投递记录改造涉及 Supabase 数据访问规范"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "通知拆层需要遵守 lib/data、app/actions、route 职责边界"}
+{"file": ".trellis/spec/shared/code-quality.md", "reason": "新增通知内容模型和渲染层时需遵守共享代码质量规则"}

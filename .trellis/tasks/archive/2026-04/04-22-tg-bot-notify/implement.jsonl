@@ -1,0 +1,7 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/backend/authentication.md", "reason": "Cron endpoint auth pattern"}
+{"file": ".trellis/spec/backend/database.md", "reason": "Supabase query patterns for settings/domains"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "New file placement conventions"}
+{"file": ".trellis/spec/frontend/components.md", "reason": "UI component patterns for settings"}
