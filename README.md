@@ -45,55 +45,55 @@
 
 通过访问秘钥验证身份，支持密文/明文切换、记住秘钥自动填充。
 
-![登录](.trellis/tasks/05-08-backend-docs/screenshots/login.png)
+![登录](docs/screenshots/login.png)
 
 ### 看板 (`/dashboard`)
 
 统计卡片和图表展示域名、站点、账户全局数据，三个标签页切换，图表点击跳转到对应筛选列表。
 
-![看板 - 域名监控](.trellis/tasks/05-08-backend-docs/screenshots/dashboard-domains.png)
+![看板 - 域名监控](docs/screenshots/dashboard-domains.png)
 
-![看板 - 账户监控](.trellis/tasks/05-08-backend-docs/screenshots/dashboard-accounts.png)
+![看板 - 账户监控](docs/screenshots/dashboard-accounts.png)
 
 ### 域名管理 (`/domains`)
 
 集中管理域名注册信息、到期时间、DNS 归属和费用，支持子域名管理。状态自动推导，多维度筛选排序，批量操作。
 
-![域名列表](.trellis/tasks/05-08-backend-docs/screenshots/domains-list.png)
+![域名列表](docs/screenshots/domains-list.png)
 
-![域名详情](.trellis/tasks/05-08-backend-docs/screenshots/domain-detail.png)
+![域名详情](docs/screenshots/domain-detail.png)
 
 ### 站点管理 (`/sites`)
 
 维护第三方服务站点（注册商、DNS 等），表格/卡片双视图，常用站点收藏拖拽排序。
 
-![站点管理](.trellis/tasks/05-08-backend-docs/screenshots/sites.png)
+![站点管理](docs/screenshots/sites.png)
 
 ### 账户管理 (`/accounts`)
 
 管理第三方平台账号及站点关联，账号标识与绑定邮箱分离，密码提示辅助记忆。
 
-![账户列表](.trellis/tasks/05-08-backend-docs/screenshots/accounts-list.png)
+![账户列表](docs/screenshots/accounts-list.png)
 
-![账号详情](.trellis/tasks/05-08-backend-docs/screenshots/account-detail.png)
+![账号详情](docs/screenshots/account-detail.png)
 
 ### 设置与通知 (`/settings`)
 
 配置项目品牌信息、通知偏好规则及三大通知通道（Telegram / Email / Webhook），均支持测试发送。
 
-![系统设置](.trellis/tasks/05-08-backend-docs/screenshots/settings-notification.png)
+![系统设置](docs/screenshots/settings-notification.png)
 
 ### 操作记录 (`/logs`)
 
 全平台操作审计追踪，按类别和时间筛选，编辑操作可查看字段变更前后对比。
 
-![操作记录](.trellis/tasks/05-08-backend-docs/screenshots/logs.png)
+![操作记录](docs/screenshots/logs.png)
 
 ### 任务执行记录 (`/job-runs`)
 
 域名到期每日检查定时任务的执行历史，记录检查域名数和通知事件数，支持手动触发。
 
-![任务执行](.trellis/tasks/05-08-backend-docs/screenshots/job-runs.png)
+![任务执行](docs/screenshots/job-runs.png)
 
 ## 本地开发
 
