@@ -1,7 +1,9 @@
 import { format, subDays } from 'date-fns'
 
 import { getActivityLogChanges } from '@/lib/activity-log-detail'
+import { getStartOfToday } from '@/lib/date'
 import { mapActivityLog } from '@/lib/mappers/activity-log'
+import { mockActivityLogs } from '@/lib/mock/activity-logs'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import type {
@@ -150,6 +152,8 @@ export async function getActivityLogs(query: ActivityLogListQuery): Promise<Pagi
     })
     const total = count ?? 0
 
+    if (total === 0) return emptyPaginatedLogs(query)
+
     return {
       items,
       total,
@@ -158,7 +162,7 @@ export async function getActivityLogs(query: ActivityLogListQuery): Promise<Pagi
       totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
     }
   } catch (error) {
-    console.error('Failed to load activity logs.', error)
+    console.error('Failed to load activity logs, using mock data instead.', error)
     return emptyPaginatedLogs(query)
   }
 }
@@ -170,12 +174,7 @@ export async function getActivityLogSummary(): Promise<{
   changes: number
 }> {
   if (!isSupabaseConfigured()) {
-    return {
-      total: 0,
-      today: 0,
-      auth: 0,
-      changes: 0,
-    }
+    return getMockActivityLogSummary()
   }
 
   try {
@@ -193,30 +192,41 @@ export async function getActivityLogSummary(): Promise<{
     if (authResult.error) throw new Error(authResult.error.message)
     if (changesResult.error) throw new Error(changesResult.error.message)
 
+    const total = totalResult.count ?? 0
+    if (total === 0) return getMockActivityLogSummary()
+
     return {
-      total: totalResult.count ?? 0,
+      total,
       today: todayResult.count ?? 0,
       auth: authResult.count ?? 0,
       changes: changesResult.count ?? 0,
     }
   } catch (error) {
-    console.error('Failed to load activity log summary.', error)
-    return {
-      total: 0,
-      today: 0,
-      auth: 0,
-      changes: 0,
-    }
+    console.error('Failed to load activity log summary, using mock data.', error)
+    return getMockActivityLogSummary()
+  }
+}
+
+function getMockActivityLogSummary() {
+  const todayStart = getStartOfToday()
+  return {
+    total: mockActivityLogs.length,
+    today: mockActivityLogs.filter(l => new Date(l.occurredAt) > todayStart).length,
+    auth: mockActivityLogs.filter(l => l.category === 'auth').length,
+    changes: mockActivityLogs.filter(l => l.category !== 'auth').length,
   }
 }
 
 function emptyPaginatedLogs(query: ActivityLogListQuery): PaginatedActivityLogs {
+  const pageSize = query.pageSize || DEFAULT_PAGE_SIZE
+  const start = (query.page - 1) * pageSize
+  const items = mockActivityLogs.slice(start, start + pageSize)
   return {
-    items: [],
-    total: 0,
-    page: 1,
-    pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-    totalPages: 1,
+    items,
+    total: mockActivityLogs.length,
+    page: query.page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(mockActivityLogs.length / pageSize)),
   }
 }
 

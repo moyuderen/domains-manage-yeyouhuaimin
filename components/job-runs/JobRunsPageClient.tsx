@@ -48,6 +48,7 @@ type RunnableJobKey = 'domain-expiry-check' | 'domain-expiry-check-daily'
 type RunnableJob = {
   key: RunnableJobKey
   label: string
+  shortLabel: string
   variant: 'default' | 'secondary'
   run: () => ReturnType<typeof runDomainExpiryCheckManuallyAction>
 }
@@ -56,12 +57,14 @@ const RUNNABLE_JOBS: RunnableJob[] = [
   {
     key: 'domain-expiry-check',
     label: '手动触发到期检查',
+    shortLabel: '到期检查',
     variant: 'default',
     run: runDomainExpiryCheckManuallyAction,
   },
   {
     key: 'domain-expiry-check-daily',
     label: '手动触发每日检查',
+    shortLabel: '每日检查',
     variant: 'secondary',
     run: runDomainExpiryCheckDailyManuallyAction,
   },
@@ -175,46 +178,37 @@ export function JobRunsPageClient({ paginatedRuns, summary }: JobRunsPageClientP
   return (
     <TooltipProvider>
       <div className="flex h-[calc(100dvh-3.5rem-2rem)] flex-col gap-6 md:h-[calc(100dvh-3.5rem-3rem)]">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-          <Card className="py-4">
-            <CardContent className="grid gap-3 px-4 sm:grid-cols-2 sm:px-6 xl:grid-cols-4">
-              <SummaryMetric label="总执行" value={summary.total} />
-              <SummaryMetric label="今日" value={summary.today} />
-              <SummaryMetric label="成功" value={summary.success} />
-              <SummaryMetric label="失败" value={summary.failed} />
-            </CardContent>
-          </Card>
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+            <SummaryMetric label="总执行" value={summary.total} />
+            <SummaryMetric label="今日" value={summary.today} />
+            <SummaryMetric label="成功" value={summary.success} />
+            <SummaryMetric label="失败" value={summary.failed} />
+          </div>
 
-          <Card className="py-4 lg:min-w-[260px]">
-            <CardContent className="flex flex-col gap-3 px-4 sm:px-6">
-              <div>
-                <div className="text-sm font-medium text-foreground">页面操作</div>
-                <div className="text-muted-foreground text-sm">支持手动触发到期检查与每日检查，并基于真实即将到期域名发送通知，然后刷新最新执行记录。</div>
-              </div>
-              <div className="flex flex-wrap justify-end gap-2 lg:justify-start">
-                {RUNNABLE_JOBS.map((job) => (
-                  <Button
-                    key={job.key}
-                    variant={job.variant}
-                    size="sm"
-                    onClick={() => { void handleRun(job) }}
-                    disabled={Boolean(runningJob) || spinning}
-                  >
-                    {runningJob === job.key ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-                    {job.label}
-                  </Button>
-                ))}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="secondary" size="icon" onClick={refresh} disabled={spinning || Boolean(runningJob)} aria-label="刷新">
-                      <RefreshCw size={16} className={spinning ? 'animate-spin' : ''} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>刷新</TooltipContent>
-                </Tooltip>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {RUNNABLE_JOBS.map((job) => (
+              <Button
+                key={job.key}
+                variant={job.variant}
+                size="sm"
+                onClick={() => { void handleRun(job) }}
+                disabled={Boolean(runningJob) || spinning}
+              >
+                {runningJob === job.key ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+                <span className="hidden sm:inline">{job.label}</span>
+                <span className="sm:hidden">{job.shortLabel}</span>
+              </Button>
+            ))}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="secondary" size="icon" onClick={refresh} disabled={spinning || Boolean(runningJob)} aria-label="刷新">
+                  <RefreshCw size={16} className={spinning ? 'animate-spin' : ''} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>刷新</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <div className="hidden min-h-0 flex-1 md:flex md:flex-col">
@@ -292,9 +286,9 @@ export function JobRunsPageClient({ paginatedRuns, summary }: JobRunsPageClientP
 
 function SummaryMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border bg-muted/30 px-4 py-3">
-      <div className="text-muted-foreground text-sm">{label}</div>
-      <div className="mt-1 text-2xl font-semibold text-foreground">{value}</div>
+    <div className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-1.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold text-foreground tabular-nums">{value}</span>
     </div>
   )
 }

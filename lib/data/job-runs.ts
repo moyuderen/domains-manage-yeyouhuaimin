@@ -2,6 +2,8 @@ import 'server-only'
 
 import { format } from 'date-fns'
 
+import { getStartOfToday } from '@/lib/date'
+import { mockJobRuns } from '@/lib/mock/job-runs'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import {
@@ -98,6 +100,8 @@ export async function getJobRuns(query: JobRunListQuery): Promise<PaginatedJobRu
 
     const total = count ?? 0
 
+    if (total === 0) return emptyPaginatedJobRuns(query)
+
     return {
       items: (data ?? []).map((row) => mapJobRun(row as JobRunRow)),
       total,
@@ -106,19 +110,14 @@ export async function getJobRuns(query: JobRunListQuery): Promise<PaginatedJobRu
       totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
     }
   } catch (error) {
-    console.error('Failed to load job runs.', error)
+    console.error('Failed to load job runs, using mock data instead.', error)
     return emptyPaginatedJobRuns(query)
   }
 }
 
 export async function getJobRunSummary(): Promise<JobRunSummary> {
   if (!canAccessJobRuns()) {
-    return {
-      total: 0,
-      today: 0,
-      success: 0,
-      failed: 0,
-    }
+    return getMockJobRunSummary()
   }
 
   try {
@@ -136,20 +135,28 @@ export async function getJobRunSummary(): Promise<JobRunSummary> {
     if (successResult.error) throw new Error(successResult.error.message)
     if (failedResult.error) throw new Error(failedResult.error.message)
 
+    const total = totalResult.count ?? 0
+    if (total === 0) return getMockJobRunSummary()
+
     return {
-      total: totalResult.count ?? 0,
+      total,
       today: todayResult.count ?? 0,
       success: successResult.count ?? 0,
       failed: failedResult.count ?? 0,
     }
   } catch (error) {
-    console.error('Failed to load job run summary.', error)
-    return {
-      total: 0,
-      today: 0,
-      success: 0,
-      failed: 0,
-    }
+    console.error('Failed to load job run summary, using mock data instead.', error)
+    return getMockJobRunSummary()
+  }
+}
+
+function getMockJobRunSummary() {
+  const todayStart = getStartOfToday()
+  return {
+    total: mockJobRuns.length,
+    today: mockJobRuns.filter(r => new Date(r.startedAt) > todayStart).length,
+    success: mockJobRuns.filter(r => r.status === 'success').length,
+    failed: mockJobRuns.filter(r => r.status === 'failed').length,
   }
 }
 
@@ -167,12 +174,15 @@ function mapJobRun(row: JobRunRow): JobRun {
 }
 
 function emptyPaginatedJobRuns(query: JobRunListQuery): PaginatedJobRuns {
+  const pageSize = query.pageSize || DEFAULT_PAGE_SIZE
+  const start = (query.page - 1) * pageSize
+  const items = mockJobRuns.slice(start, start + pageSize)
   return {
-    items: [],
-    total: 0,
-    page: 1,
-    pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-    totalPages: 1,
+    items,
+    total: mockJobRuns.length,
+    page: query.page,
+    pageSize,
+    totalPages: Math.max(1, Math.ceil(mockJobRuns.length / pageSize)),
   }
 }
 
