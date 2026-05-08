@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 24
-- **Last Active**: 2026-05-06
+- **Total Sessions**: 25
+- **Last Active**: 2026-05-08
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~803 | Active |
+| `journal-1.md` | ~836 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 25 | 2026-05-08 | 编写后台功能使用文档 + 截图 + 推广文案 + UI修复 | `1420a28` | `main` |
 | 24 | 2026-05-06 | SearchableSelect 可搜索下拉组件 | `c349143` | `main` |
 | 23 | 2026-05-05 | 完成 Vercel Cron 与域名状态口径统一 | `4f4db4c` | `main` |
 | 22 | 2026-05-04 | 定时任务平台无关化与 job runs 列表页 | `a5a1ec7` | `main` |

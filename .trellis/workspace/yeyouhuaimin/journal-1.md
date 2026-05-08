@@ -801,3 +801,36 @@ Added IP, OS, and browser details to manual notifications, exposed source contex
 ### Next Steps
 
 - None - task complete
+
+
+## Session 25: 编写后台功能使用文档 + 截图 + 推广文案 + UI修复
+
+**Date**: 2026-05-08
+**Task**: 编写后台功能使用文档 + 截图 + 推广文案 + UI修复
+**Branch**: `main`
+
+### Summary
+
+生成8章节后台功能文档合并到README，Puppeteer自动截取12张16:9截图，创建activity-logs/job-runs mock数据，修复JobRunsPageClient响应式布局，编写开源推广文案，simplify修复date-fns违规和分页问题
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1420a28` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
