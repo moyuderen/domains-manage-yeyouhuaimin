@@ -834,3 +834,36 @@ Added IP, OS, and browser details to manual notifications, exposed source contex
 ### Next Steps
 
 - None - task complete
+
+
+## Session 26: 实现域名后缀筛选与 dashboard 图表
+
+**Date**: 2026-05-20
+**Task**: 实现域名后缀筛选与 dashboard 图表
+**Branch**: `main`
+
+### Summary
+
+统一域名后缀提取/匹配逻辑，新增域名列表后缀筛选与 dashboard 后缀分布图，并优化图表横向滚动、标签 tooltip 与数据读取范围。
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3b628e8` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
