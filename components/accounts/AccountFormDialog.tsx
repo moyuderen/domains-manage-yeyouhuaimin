@@ -100,22 +100,26 @@ export function AccountFormDialog({ open, initialValue, sites, emailIdentifiers,
     setLoading(true)
     const email = isEmail(values.identifier) ? values.identifier : values.email
     const finalValues = { ...values, email }
-    try {
-      if (initialValue) {
-        await updateAccountAction(initialValue.id, finalValues)
+
+    if (initialValue) {
+      const result = await updateAccountAction(initialValue.id, finalValues)
+      if (result.success) {
         toast.success('账号更新成功')
         onClose()
-        return
+      } else {
+        toast.error(result.error)
       }
-
-      const account = await createAccountAction(finalValues)
-      toast.success('账号添加成功')
-      onClose(account)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : '保存失败')
-    } finally {
-      setLoading(false)
+    } else {
+      const result = await createAccountAction(finalValues)
+      if (result.success) {
+        toast.success('账号添加成功')
+        onClose(result.data)
+      } else {
+        toast.error(result.error)
+      }
     }
+
+    setLoading(false)
   }
 
   return (

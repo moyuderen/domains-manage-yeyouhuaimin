@@ -11,57 +11,67 @@ import { buildDeleteFallbackResourceName } from '@/lib/data/activity-logs'
 import { createAccount, deleteAccount, getAccountById, toggleAccountActive, updateAccount, updateAccountSites } from '@/lib/data/accounts'
 import { getSitesByIds } from '@/lib/data/sites'
 import { accountSchema } from '@/schemas/accountSchemas'
-import type { AccountFormValues, SiteEntry } from '@/types/account'
+import type { Account, AccountFormValues, SiteEntry } from '@/types/account'
+import type { ActionResult } from '@/types/action'
 
-export async function createAccountAction(values: AccountFormValues) {
-  await requireAccess()
-  const parsed = accountSchema.parse(values)
-  const requestContext = getActivityRequestContext(await headers())
-  const account = await createAccount(parsed)
+export async function createAccountAction(values: AccountFormValues): Promise<ActionResult<Account>> {
+  try {
+    await requireAccess()
+    const parsed = accountSchema.parse(values)
+    const requestContext = getActivityRequestContext(await headers())
+    const account = await createAccount(parsed)
 
-  await tryEmitEvent({
-    category: 'account',
-    action: 'create',
-    resourceType: 'account',
-    resourceId: account.id,
-    resourceName: account.identifier,
-    summary: buildActivitySummary('create', '账号', account.identifier),
-    requestContext,
-  })
-  revalidatePath('/accounts')
-  revalidatePath('/domains')
-  revalidatePath('/logs')
-  return account
+    await tryEmitEvent({
+      category: 'account',
+      action: 'create',
+      resourceType: 'account',
+      resourceId: account.id,
+      resourceName: account.identifier,
+      summary: buildActivitySummary('create', '账号', account.identifier),
+      requestContext,
+    })
+    revalidatePath('/accounts')
+    revalidatePath('/domains')
+    revalidatePath('/logs')
+    return { success: true, data: account }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : '添加账号失败' }
+  }
 }
 
-export async function updateAccountAction(id: string, values: AccountFormValues) {
-  await requireAccess()
-  const parsed = accountSchema.parse(values)
-  const [previousAccount, headerStore] = await Promise.all([getAccountById(id), headers()])
-  const requestContext = getActivityRequestContext(headerStore)
-  const resourceName = parsed.identifier.trim()
-  const siteIds = [...new Set([
-    ...parsed.sites.map((site) => site.site),
-    ...(previousAccount?.sites.map((site) => site.site) ?? []),
-  ])]
-  const sites = await getSitesByIds(siteIds)
+export async function updateAccountAction(id: string, values: AccountFormValues): Promise<ActionResult<void>> {
+  try {
+    await requireAccess()
+    const parsed = accountSchema.parse(values)
+    const [previousAccount, headerStore] = await Promise.all([getAccountById(id), headers()])
+    const requestContext = getActivityRequestContext(headerStore)
+    const resourceName = parsed.identifier.trim()
+    const siteIds = [...new Set([
+      ...parsed.sites.map((site) => site.site),
+      ...(previousAccount?.sites.map((site) => site.site) ?? []),
+    ])]
+    const sites = await getSitesByIds(siteIds)
 
-  await updateAccount(id, parsed)
-  await tryEmitEvent({
-    category: 'account',
-    action: 'update',
-    resourceType: 'account',
-    resourceId: id,
-    resourceName,
-    summary: buildActivitySummary('update', '账号', resourceName),
-    requestContext,
-    detail: buildAccountUpdateDetailFromForm(previousAccount, parsed, {
-      siteNamesById: new Map(sites.map((site) => [site.id, site.name])),
-    }),
-  })
-  revalidatePath('/accounts')
-  revalidatePath('/domains')
-  revalidatePath('/logs')
+    await updateAccount(id, parsed)
+    await tryEmitEvent({
+      category: 'account',
+      action: 'update',
+      resourceType: 'account',
+      resourceId: id,
+      resourceName,
+      summary: buildActivitySummary('update', '账号', resourceName),
+      requestContext,
+      detail: buildAccountUpdateDetailFromForm(previousAccount, parsed, {
+        siteNamesById: new Map(sites.map((site) => [site.id, site.name])),
+      }),
+    })
+    revalidatePath('/accounts')
+    revalidatePath('/domains')
+    revalidatePath('/logs')
+    return { success: true, data: undefined }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : '更新账号失败' }
+  }
 }
 
 export async function deleteAccountAction(id: string) {
