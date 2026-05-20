@@ -141,4 +141,19 @@ describe('SearchableSelect', () => {
     const { trigger } = renderSelect({ value: 'cloudflare' })
     expect(trigger).not.toHaveClass('text-muted-foreground')
   })
+
+  it('supports selecting a custom value when enabled', async () => {
+    const user = userEvent.setup()
+    const { onValueChange, trigger } = renderSelect({
+      allowCustomValue: true,
+      formatCustomValueLabel: (value) => `使用后缀：${value}`,
+      normalizeCustomValue: (value) => value.trim().toLowerCase(),
+    })
+
+    await user.click(trigger)
+    await user.type(getSearchInput(), 'MC.CC')
+    await user.click(screen.getByText('使用后缀：mc.cc'))
+
+    expect(onValueChange).toHaveBeenCalledWith('mc.cc')
+  })
 })

@@ -17,6 +17,7 @@ import type {
   AccountProviderDistributionItem,
   AccountReuseDistributionItem,
   DnsDistributionItem,
+  DomainSuffixDistributionItem,
   InactiveAccountRiskItem,
   RegistrarDistributionItem,
   StaleAccountRiskItem,
@@ -35,6 +36,7 @@ type DashboardPageClientProps = {
   freePaidDistribution: { name: string; value: number }[]
   registrarDistribution: RegistrarDistributionItem[]
   dnsProviderDistribution: DnsDistributionItem[]
+  suffixDistribution: DomainSuffixDistributionItem[]
   expiry30: { name: string; value: number }[]
   createdTrend: { name: string; value: number }[]
   upcomingRisk: Domain[]
@@ -111,18 +113,18 @@ export function DashboardPageClient(props: DashboardPageClientProps) {
                 <TriangleAlert size={16} className="text-amber-600 dark:text-amber-300" />
                 近期风险提醒
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
-                {props.upcomingRisk.length ? (
-                  props.upcomingRisk.map((domain) => (
+              {props.upcomingRisk.length ? (
+                <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
+                  {props.upcomingRisk.map((domain) => (
                     <div key={domain.id} className="bg-amber-500/8 rounded-2xl border border-amber-500/15 p-4">
                       <div className="font-medium text-foreground">{domain.name}</div>
                       <div className="text-muted-foreground mt-2 text-sm">到期：{formatDate(domain.expiryDate)}</div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground text-sm">暂无 7 天内到期域名。</div>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground mt-4 text-sm">暂无 7 天内到期域名。</div>
+              )}
             </CardContent>
           </Card>
 
@@ -131,6 +133,7 @@ export function DashboardPageClient(props: DashboardPageClientProps) {
             freePaidDistribution={props.freePaidDistribution ?? []}
             registrarDistribution={props.registrarDistribution ?? []}
             dnsProviderDistribution={props.dnsProviderDistribution ?? []}
+            suffixDistribution={props.suffixDistribution ?? []}
             expiry30={props.expiry30 ?? []}
             createdTrend={props.createdTrend ?? []}
           />

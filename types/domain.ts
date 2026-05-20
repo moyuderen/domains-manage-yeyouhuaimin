@@ -73,6 +73,7 @@ export type SubdomainFormValues = {
 
 export type DomainFilters = {
   keyword: string
+  suffix: string
   status: DomainStatus | 'all'
   registrarSiteId: string | 'all'
   dnsSiteId: string | 'all'

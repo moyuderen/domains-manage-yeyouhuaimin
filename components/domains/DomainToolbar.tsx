@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { normalizeSuffixValue, type DomainSuffixOption } from '@/lib/domainSuffix'
 import type { DomainFilters } from '@/types/domain'
 import type { Site } from '@/types/site'
 
@@ -18,6 +19,7 @@ type DomainToolbarProps = {
   filters: DomainFilters
   keywordInput: string
   sites: Site[]
+  suffixOptions: DomainSuffixOption[]
   selectedCount: number
   visibleColumns: HideableDomainColumnKey[]
   onKeywordChange: (keyword: string) => void
@@ -47,7 +49,7 @@ const sortOrderOptions = [
   { label: '升序', value: 'asc' },
 ] as const
 
-export function DomainToolbar({ filters, keywordInput, sites, selectedCount, visibleColumns, onKeywordChange, onFiltersChange, onToggleColumn, onAdd, refreshing, onRefresh, onDeleteSelected }: DomainToolbarProps) {
+export function DomainToolbar({ filters, keywordInput, sites, suffixOptions, selectedCount, visibleColumns, onKeywordChange, onFiltersChange, onToggleColumn, onAdd, refreshing, onRefresh, onDeleteSelected }: DomainToolbarProps) {
   return (
     <TooltipProvider>
       <div className="space-y-3">
@@ -61,6 +63,21 @@ export function DomainToolbar({ filters, keywordInput, sites, selectedCount, vis
               placeholder="搜索域名 / 注册站点 / 注册账号 / DNS 站点 / DNS 账号"
             />
           </label>
+          <SearchableSelect
+            value={filters.suffix}
+            onValueChange={(value) => onFiltersChange({ ...filters, suffix: value })}
+            placeholder="全部后缀"
+            searchPlaceholder="输入或选择后缀..."
+            emptyText="未找到匹配后缀"
+            className="w-[10rem]"
+            allowCustomValue
+            normalizeCustomValue={normalizeSuffixValue}
+            formatCustomValueLabel={(value) => `使用后缀：${value}`}
+            options={[
+              { label: '全部后缀', value: '' },
+              ...suffixOptions.map((option) => ({ label: `${option.value} (${option.count})`, value: option.value })),
+            ]}
+          />
           <Select value={filters.status} onValueChange={(value) => onFiltersChange({ ...filters, status: value as DomainFilters['status'] })}>
             <SelectTrigger className="w-[8rem]">
               <SelectValue placeholder="全部状态" />

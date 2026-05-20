@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckIcon, ChevronDownIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -29,6 +29,9 @@ type SearchableSelectProps = {
   emptyText?: string
   className?: string
   id?: string
+  allowCustomValue?: boolean
+  formatCustomValueLabel?: (value: string) => string
+  normalizeCustomValue?: (value: string) => string
   'aria-invalid'?: boolean
 }
 
@@ -41,13 +44,26 @@ export function SearchableSelect({
   emptyText = '未找到匹配项',
   className,
   id,
+  allowCustomValue = false,
+  formatCustomValueLabel = (customValue) => `使用“${customValue}”`,
+  normalizeCustomValue = (customValue) => customValue.trim(),
   'aria-invalid': ariaInvalid,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false)
-  const selected = options.find((option) => option.value === value)
+  const [searchValue, setSearchValue] = useState('')
+  const selected = options.find((option) => option.value === value) ?? (allowCustomValue && value ? { label: value, value } : undefined)
+  const customValue = normalizeCustomValue(searchValue)
+  const hasCustomValue = allowCustomValue && Boolean(customValue) && !options.some((option) => option.value === customValue)
+  const renderedOptions = useMemo(() => {
+    if (!hasCustomValue) return options
+    return [{ label: formatCustomValueLabel(customValue), value: customValue }, ...options]
+  }, [customValue, formatCustomValueLabel, hasCustomValue, options])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(nextOpen) => {
+      setOpen(nextOpen)
+      if (!nextOpen) setSearchValue('')
+    }}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -68,16 +84,17 @@ export function SearchableSelect({
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
-          <CommandInput placeholder={searchPlaceholder} />
+          <CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {renderedOptions.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label}
+                  value={`${option.label} ${option.value}`}
                   onSelect={() => {
                     onValueChange(option.value)
+                    setSearchValue('')
                     setOpen(false)
                   }}
                 >

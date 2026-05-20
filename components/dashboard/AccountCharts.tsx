@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { type ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart'
-import { getChartColor, TruncatedTick } from './chart-utils'
+import { getChartColor, getScrollableChartMinWidth, SCROLLABLE_BAR_MAX_WIDTH, TruncatedTick } from './chart-utils'
 
 import type {
   AccountProviderDistributionItem,
@@ -89,24 +89,27 @@ export function AccountSiteChart({ data }: { data: AccountSiteData[] }) {
       { label: item.name, color: getChartColor(i) },
     ]),
   ) satisfies ChartConfig
+  const minWidth = getScrollableChartMinWidth(data.length)
 
   return (
     <Card>
       <CardContent>
         <div className="text-foreground mb-4 text-sm font-medium">注册站点分布</div>
-        <ChartContainer config={chartConfig} className="min-h-[220px] w-full md:min-h-[280px]">
-          <BarChart accessibilityLayer data={data} margin={{ top: 8, bottom: 40 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis dataKey="name" tickLine={false} axisLine={false} interval={0} height={50} tick={TruncatedTick} />
-            <YAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} />
-            <Tooltip content={<AccountSiteTooltip />} />
-            <Bar dataKey="value" radius={[6, 6, 0, 0]} minPointSize={4}>
-              {data.map((_, index) => (
-                <Cell key={index} fill={getChartColor(index)} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+        <div className="overflow-x-auto pb-2">
+          <ChartContainer config={chartConfig} className="h-[240px] min-h-[240px]" style={{ width: `max(100%, ${minWidth}px)` }}>
+            <BarChart accessibilityLayer data={data} margin={{ top: 8, right: 12, left: 12, bottom: 16 }} barCategoryGap="20%">
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} interval={0} height={52} tick={TruncatedTick} />
+              <YAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} />
+              <Tooltip content={<AccountSiteTooltip />} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]} minPointSize={4} maxBarSize={SCROLLABLE_BAR_MAX_WIDTH}>
+                {data.map((_, index) => (
+                  <Cell key={index} fill={getChartColor(index)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   )

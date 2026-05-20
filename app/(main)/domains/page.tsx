@@ -1,6 +1,7 @@
 import { DomainsPageClient } from '@/components/domains/DomainsPageClient'
 import { buildAccountLookup, getAllAccounts } from '@/lib/data/accounts'
-import { getDomains } from '@/lib/data/domains'
+import { getDomains, listAllDomainNames } from '@/lib/data/domains'
+import { collectDomainSuffixOptions } from '@/lib/domainSuffix'
 import { getNotificationRuleSettings } from '@/lib/data/settings'
 import { getActiveSites, getAllSites } from '@/lib/data/sites'
 import { getSingleParam } from '@/lib/utils/params'
@@ -8,6 +9,7 @@ import { DEFAULT_DOMAIN_SORT_BY, DEFAULT_DOMAIN_SORT_ORDER, DOMAIN_SORT_BY_OPTIO
 
 const defaultFilters: DomainFilters = {
   keyword: '',
+  suffix: '',
   status: 'all',
   registrarSiteId: 'all',
   dnsSiteId: 'all',
@@ -20,6 +22,7 @@ const DEFAULT_PAGE_SIZE = 20
 
 export default async function DomainsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams
+  const suffix = getSingleParam(params?.suffix)
   const status = getSingleParam(params?.status)
   const registrarSiteId = getSingleParam(params?.registrarSiteId)
   const dnsSiteId = getSingleParam(params?.dnsSiteId)
@@ -28,6 +31,7 @@ export default async function DomainsPage({ searchParams }: { searchParams?: Pro
   const pageSize = Number.parseInt(getSingleParam(params?.pageSize) ?? String(DEFAULT_PAGE_SIZE), 10)
   const filters: DomainFilters = {
     keyword: getSingleParam(params?.keyword) ?? defaultFilters.keyword,
+    suffix: suffix?.trim().toLowerCase() ?? defaultFilters.suffix,
     status: isStatusValue(status) ? status : defaultFilters.status,
     registrarSiteId: registrarSiteId || defaultFilters.registrarSiteId,
     dnsSiteId: dnsSiteId || defaultFilters.dnsSiteId,
@@ -40,8 +44,9 @@ export default async function DomainsPage({ searchParams }: { searchParams?: Pro
   const sitesPromise = getActiveSites()
   const linkSitesPromise = getAllSites()
   const accountsPromise = getAllAccounts()
+  const suffixOptionsPromise = listAllDomainNames().then((domainNames) => collectDomainSuffixOptions(domainNames))
   const rules = await rulesPromise
-  const [result, sites, linkSites, accounts] = await Promise.all([
+  const [result, sites, linkSites, accounts, suffixOptions] = await Promise.all([
     getDomains({
       ...filters,
       page,
@@ -50,11 +55,12 @@ export default async function DomainsPage({ searchParams }: { searchParams?: Pro
     sitesPromise,
     linkSitesPromise,
     accountsPromise,
+    suffixOptionsPromise,
   ])
 
   const accountLookup = buildAccountLookup(accounts)
 
-  return <DomainsPageClient initialFilters={filters} paginatedDomains={result} sites={sites} linkSites={linkSites} accounts={accounts} accountLookup={accountLookup} expiryDays={rules.expiryDays} />
+  return <DomainsPageClient initialFilters={filters} paginatedDomains={result} sites={sites} linkSites={linkSites} accounts={accounts} accountLookup={accountLookup} expiryDays={rules.expiryDays} suffixOptions={suffixOptions} />
 }
 
 function isStatusValue(value?: string): value is DomainFilters['status'] {

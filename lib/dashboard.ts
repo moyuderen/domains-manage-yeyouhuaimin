@@ -1,10 +1,15 @@
+import { subDays, differenceInDays as dfnsDifferenceInDays, isBefore, parseISO } from 'date-fns'
+
+import { EMAIL_PROVIDER_LABELS } from '../types/account'
 import type { Account } from '../types/account'
 import type { Domain } from '../types/domain'
 import type { Site } from '../types/site'
 import { addDays, dayLabel } from './date'
+import { buildDomainSuffixDistribution } from './domainSuffix'
+import type { DomainSuffixDistributionItem } from './domainSuffix'
+
+export type { DomainSuffixDistributionItem } from './domainSuffix'
 import { getDomainStatus } from './domainStatus'
-import { EMAIL_PROVIDER_LABELS } from '../types/account'
-import { subDays, differenceInDays as dfnsDifferenceInDays, isBefore, parseISO } from 'date-fns'
 
 const UNNAMED = '未填写'
 
@@ -111,6 +116,10 @@ export function getDnsProviderDistribution(domains: Domain[], sites: Site[]): Dn
       value: group.count,
       websiteUrl: group.siteId ? (siteMap.get(group.siteId)?.websiteUrl ?? null) : null,
     }))
+}
+
+export function getDomainSuffixDistribution(domains: Domain[]): DomainSuffixDistributionItem[] {
+  return buildDomainSuffixDistribution(domains)
 }
 
 export function getExpiryTimeline(domains: Domain[], range: 30 | 60 | 90 = 30) {

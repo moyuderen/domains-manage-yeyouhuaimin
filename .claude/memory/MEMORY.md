@@ -7,3 +7,4 @@
 
 ## 条目
 - [新增编辑弹窗禁止空白关闭](feedback_form_dialog_disable_outside_close.md) — 输入型新增/编辑弹窗默认禁止点击遮罩或空白区域关闭
+- [测试与 mock 禁用真实域名](feedback_no_real_domains_in_tests_or_mocks.md) — 用户举例时提到的真实域名不得直接写入测试或 mock

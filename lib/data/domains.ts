@@ -1,7 +1,11 @@
-import { format, addDays as dfnsAddDays } from 'date-fns'
+import 'server-only'
 
-import { getDomainStatus } from '@/lib/domainStatus'
+import { format, addDays as dfnsAddDays } from 'date-fns'
+import { cache } from 'react'
+
 import { getNotificationRuleSettings } from '@/lib/data/settings'
+import { createDomainSuffixContext, extractDomainSuffix, matchesDomainSuffix } from '@/lib/domainSuffix'
+import { getDomainStatus } from '@/lib/domainStatus'
 import { mapDomain, normalizeDomainName } from '@/lib/mappers/domain'
 import { mockDomains } from '@/lib/mock/domains'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
@@ -48,6 +52,10 @@ export async function getDomains(query: DomainListQuery, expiryDays?: number): P
       }
 
       builder = builder.or(conditions.join(','))
+    }
+
+    if (query.suffix.trim()) {
+      builder = builder.ilike('name', `%.${normalizeDomainName(query.suffix)}`)
     }
 
     if (query.status === 'expired') {
@@ -107,6 +115,48 @@ export async function getDomains(query: DomainListQuery, expiryDays?: number): P
     console.error('Failed to load domains from Supabase, using mock data instead.', error)
     return paginateDomains(sortDomains(filterMockDomains(query, resolvedExpiryDays), query), query)
   }
+}
+
+const readAllDomainNames = cache(async (): Promise<string[]> => {
+  if (!isSupabaseConfigured()) {
+    return mockDomains.map((domain) => domain.name)
+  }
+
+  const supabase = createSupabaseAdminClient()
+  const { data, error } = await supabase.from('domains').select('name')
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map((row) => row.name).filter((name): name is string => Boolean(name))
+})
+
+export async function listAllDomainNames(): Promise<string[]> {
+  return readAllDomainNames()
+}
+
+export async function listAllDomains(): Promise<Domain[]> {
+  if (!isSupabaseConfigured()) {
+    return mockDomains
+  }
+
+  const supabase = createSupabaseAdminClient()
+  const { data, error } = await supabase.from('domains').select('*, subdomains(*)')
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map((row) => mapDomain(row as DomainRow))
+}
+
+export async function listAllDomainsForDashboard(): Promise<Domain[]> {
+  if (!isSupabaseConfigured()) {
+    return mockDomains
+  }
+
+  const supabase = createSupabaseAdminClient()
+  const { data, error } = await supabase
+    .from('domains')
+    .select('id, name, registrar_account_id, registrar_site_id, registration_date, expiry_date, dns_account_id, dns_site_id, renewal_days_before_expiry, is_free, currency, purchase_price, renewal_price, auto_renewal, remark, created_at, updated_at')
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map((row) => mapDomain({ ...(row as DomainRow), subdomains: [] }))
 }
 
 export async function getDomainById(id: string): Promise<Domain | null> {
@@ -249,22 +299,27 @@ async function getDomainByIdWithClient(supabase: ReturnType<typeof createSupabas
 
 function filterMockDomains(query: DomainListQuery, expiryDays: number) {
   const keyword = query.keyword.trim().toLowerCase()
+  const suffix = query.suffix.trim().toLowerCase()
 
   return mockDomains.filter((domain) => {
     const matchesKeyword = !keyword || domain.name.toLowerCase().includes(keyword)
+    const matchesSuffix = !suffix || matchesDomainSuffix(domain.name, suffix)
     const matchesStatus = query.status === 'all' || getDomainStatus(domain.expiryDate, expiryDays) === query.status
     const matchesRegistrarSite = query.registrarSiteId === 'all' || domain.registrarSiteId === query.registrarSiteId
     const matchesDnsSite = query.dnsSiteId === 'all' || domain.dnsSiteId === query.dnsSiteId
-    return matchesKeyword && matchesStatus && matchesRegistrarSite && matchesDnsSite
+    return matchesKeyword && matchesSuffix && matchesStatus && matchesRegistrarSite && matchesDnsSite
   })
 }
 
 function sortDomains(domains: Domain[], query: DomainListQuery) {
   const direction = query.sortOrder === 'asc' ? 1 : -1
+  const suffixContext = query.sortBy === 'suffix'
+    ? createDomainSuffixContext(domains.map((domain) => domain.name))
+    : undefined
 
   return [...domains].sort((left, right) => {
-    if (query.sortBy === 'suffix') {
-      const suffixResult = compareStrings(extractDomainSuffix(left.name), extractDomainSuffix(right.name), direction)
+    if (query.sortBy === 'suffix' && suffixContext) {
+      const suffixResult = compareStrings(extractDomainSuffix(left.name, suffixContext), extractDomainSuffix(right.name, suffixContext), direction)
       if (suffixResult !== 0) return suffixResult
     } else if (query.sortBy === 'createdAt') {
       const createdAtResult = compareStrings(left.createdAt, right.createdAt, direction)
@@ -297,11 +352,6 @@ function paginateDomains(domains: Domain[], query: DomainListQuery): PaginatedDo
   }
 }
 
-function extractDomainSuffix(domainName: string) {
-  const segments = normalizeDomainName(domainName).split('.').filter(Boolean)
-  return segments.at(-1) ?? ''
-}
-
 function compareStrings(left: string, right: string, direction: 1 | -1) {
   return left.localeCompare(right, 'zh-CN') * direction
 }
@@ -309,4 +359,3 @@ function compareStrings(left: string, right: string, direction: 1 | -1) {
 function todayDate() {
   return format(new Date(), 'yyyy-MM-dd')
 }
-

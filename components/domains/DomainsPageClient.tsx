@@ -27,13 +27,14 @@ import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { DEFAULT_DOMAIN_SORT_BY, DEFAULT_DOMAIN_SORT_ORDER, type Domain, type DomainDialogMode, type DomainFilters, type PaginatedDomains } from '@/types/domain'
+import type { DomainSuffixOption } from '@/lib/domainSuffix'
 import type { AccountLookup } from '@/lib/data/accounts'
 import type { Account } from '@/types/account'
 import type { Site } from '@/types/site'
 
 const DOMAIN_COLUMNS_STORAGE_KEY = 'domains-visible-columns'
 
-export function DomainsPageClient({ initialFilters, paginatedDomains, sites, linkSites, accounts, accountLookup, expiryDays }: { initialFilters: DomainFilters; paginatedDomains: PaginatedDomains; sites: Site[]; linkSites: Site[]; accounts: Account[]; accountLookup: AccountLookup; expiryDays: number }) {
+export function DomainsPageClient({ initialFilters, paginatedDomains, sites, linkSites, accounts, accountLookup, expiryDays, suffixOptions }: { initialFilters: DomainFilters; paginatedDomains: PaginatedDomains; sites: Site[]; linkSites: Site[]; accounts: Account[]; accountLookup: AccountLookup; expiryDays: number; suffixOptions: DomainSuffixOption[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -97,6 +98,9 @@ export function DomainsPageClient({ initialFilters, paginatedDomains, sites, lin
 
     if (nextFilters.keyword.trim()) params.set('keyword', nextFilters.keyword.trim())
     else params.delete('keyword')
+
+    if (nextFilters.suffix.trim()) params.set('suffix', nextFilters.suffix.trim())
+    else params.delete('suffix')
 
     if (nextFilters.status !== 'all') params.set('status', nextFilters.status)
     else params.delete('status')
@@ -220,6 +224,7 @@ export function DomainsPageClient({ initialFilters, paginatedDomains, sites, lin
         filters={initialFilters}
         keywordInput={keywordInput}
         sites={sites}
+        suffixOptions={suffixOptions}
         selectedCount={selectedCount}
         visibleColumns={visibleColumns}
         onKeywordChange={setKeywordInput}
